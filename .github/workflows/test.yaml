@@ -5,6 +5,8 @@ env:
   GOMOD_CACHE_NAME: 'go-cache'
 
 on:
+  push:
+    branches: [ master ]
   pull_request:
     branches-ignore: []
 
