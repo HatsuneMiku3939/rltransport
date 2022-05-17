@@ -30,14 +30,8 @@ lint: $(TOOLS_DIR)/golangci-lint
 .PHONY: test
 test:
 	@echo TEST
-	@go test  ./...
+	@cd test && go test -v ./...
 	@printf "TEST... \033[0;32m [OK] \033[0m\n"
-
-## test/coverage: Run test and generate coverage report
-.PHONY: test/coverage
-test/coverage:
-	@go test ./... -coverprofile=coverage.txt -covermode=atomic
-	@go tool cover -html=coverage.txt -o coverage.html
 
 .PHONY: $(BIN_DIR)
 $(BIN_DIR):
