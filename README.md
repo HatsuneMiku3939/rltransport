@@ -1,3 +1,6 @@
+[![CodeQL](https://github.com/HatsuneMiku3939/rltransport/actions/workflows/codeql-analysis.yml/badge.svg)](https://github.com/HatsuneMiku3939/rltransport/actions/workflows/codeql-analysis.yml)
+[![Unit Test](https://github.com/HatsuneMiku3939/rltransport/actions/workflows/test.yaml/badge.svg)](https://github.com/HatsuneMiku3939/rltransport/actions/workflows/test.yaml)
+
 # rltransport
 The RoundTripper which limits the number of concurrent requests.
 
