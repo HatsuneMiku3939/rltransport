@@ -2,6 +2,7 @@ name: Unit Test
 
 env:
   GOVERSION: '1.17'
+  GOMOD_CACHE_NAME: 'go-cache'
 
 on:
   pull_request:
@@ -23,9 +24,9 @@ jobs:
     - uses: actions/cache@v2
       with:
         path: ~/go/pkg/mod
-        key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+        key: ${{ runner.os }}-${{ env.GOMOD_CACHE_NAME }}-${{ hashFiles('**/go.sum') }}
         restore-keys: |
-          ${{ runner.os }}-go-
+          ${{ runner.os }}-${{ env.GOMOD_CACHE_NAME }}-
 
     - name: Download go module
       run: go mod download
@@ -54,9 +55,9 @@ jobs:
     - uses: actions/cache@v2
       with:
         path: ~/go/pkg/mod
-        key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+        key: ${{ runner.os }}-${{ env.GOMOD_CACHE_NAME }}-${{ hashFiles('**/go.sum') }}
         restore-keys: |
-          ${{ runner.os }}-go-
+          ${{ runner.os }}-${{ env.GOMOD_CACHE_NAME }}-
 
     - name: Test
       run: make test
@@ -78,9 +79,9 @@ jobs:
     - uses: actions/cache@v2
       with:
         path: ~/go/pkg/mod
-        key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+        key: ${{ runner.os }}-${{ env.GOMOD_CACHE_NAME }}-${{ hashFiles('**/go.sum') }}
         restore-keys: |
-          ${{ runner.os }}-go-
+          ${{ runner.os }}-${{ env.GOMOD_CACHE_NAME }}-
 
     - name: Lint
       run: make lint-ci
