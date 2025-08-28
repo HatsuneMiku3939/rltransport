@@ -16,14 +16,14 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - name: Checkout Code
-      uses: actions/checkout@v2
+      uses: actions/checkout@v4
 
     - name: Install Go
-      uses: actions/setup-go@v2
+      uses: actions/setup-go@v5
       with:
         go-version: ${{ env.GOVERSION }}
 
-    - uses: actions/cache@v2
+    - uses: actions/cache@v4
       with:
         path: ~/go/pkg/mod
         key: ${{ runner.os }}-${{ env.GOMOD_CACHE_NAME }}-${{ hashFiles('**/go.sum') }}
@@ -47,14 +47,14 @@ jobs:
       - gomod
     steps:
     - name: Checkout Code
-      uses: actions/checkout@v2
+      uses: actions/checkout@v4
 
     - name: Install Go
-      uses: actions/setup-go@v2
+      uses: actions/setup-go@v5
       with:
         go-version: ${{ env.GOVERSION }}
 
-    - uses: actions/cache@v2
+    - uses: actions/cache@v4
       with:
         path: ~/go/pkg/mod
         key: ${{ runner.os }}-${{ env.GOMOD_CACHE_NAME }}-${{ hashFiles('**/go.sum') }}
@@ -71,14 +71,14 @@ jobs:
       - gomod
     steps:
     - name: Checkout Code
-      uses: actions/checkout@v2
+      uses: actions/checkout@v4
 
     - name: Install Go
-      uses: actions/setup-go@v2
+      uses: actions/setup-go@v5
       with:
         go-version: ${{ env.GOVERSION }}
 
-    - uses: actions/cache@v2
+    - uses: actions/cache@v4
       with:
         path: ~/go/pkg/mod
         key: ${{ runner.os }}-${{ env.GOMOD_CACHE_NAME }}-${{ hashFiles('**/go.sum') }}
