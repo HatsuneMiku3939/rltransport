@@ -14,6 +14,6 @@ type Limiter interface {
 type unlimitedLimiter struct{}
 
 // Wait always success.
-func (l *unlimitedLimiter) Wait(ctx context.Context) error {
+func (l *unlimitedLimiter) Wait(_ context.Context) error {
 	return nil
 }
