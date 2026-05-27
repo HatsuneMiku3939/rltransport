@@ -25,9 +25,7 @@ func main() {
 
 	// Create a new http.Client with the limiter.
 	client := &http.Client{
-		Transport: &rltransport.RoundTripper{
-			Limiter: limiter,
-		},
+		Transport: rltransport.New(limiter),
 	}
 
 	// Make a request to the server.

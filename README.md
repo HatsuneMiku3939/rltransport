@@ -6,6 +6,8 @@ The RoundTripper which rate-limits outbound HTTP requests.
 
 ## examples
 
+Use `rltransport.New(limiter)` to create a transport. Pass `nil` to disable rate limiting.
+
 ```golang
 package main
 
@@ -34,9 +36,7 @@ func main() {
 
 	// Create a new http.Client with the limiter.
 	client := &http.Client{
-		Transport: &rltransport.RoundTripper{
-			Limiter: limiter,
-		},
+		Transport: rltransport.New(limiter),
 	}
 
 	// Make a request to the server.
