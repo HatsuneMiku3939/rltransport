@@ -115,6 +115,45 @@ func (s *RoundTripperTestSuite) TestSimpleLimiter() {
 	}
 }
 
+func (s *RoundTripperTestSuite) TestNew() {
+	limiter := &simpleLimiter{
+		Count: 0,
+		Limit: 1,
+	}
+
+	rt := rltransport.New(limiter)
+	assert.Same(s.T(), limiter, rt.Limiter)
+	assert.NotNil(s.T(), rt.Transport)
+
+	monitor := NewMonitoringTripper()
+	rt.Transport = monitor
+
+	client := &http.Client{
+		Transport: rt,
+	}
+
+	_, err := client.Get("http://example.com")
+	assert.NoError(s.T(), err)
+	assert.Equal(s.T(), 1, monitor.TripCount)
+}
+
+func (s *RoundTripperTestSuite) TestNewWithNilLimiter() {
+	rt := rltransport.New(nil)
+	assert.NotNil(s.T(), rt.Limiter)
+	assert.NotNil(s.T(), rt.Transport)
+
+	monitor := NewMonitoringTripper()
+	rt.Transport = monitor
+
+	client := &http.Client{
+		Transport: rt,
+	}
+
+	_, err := client.Get("http://example.com")
+	assert.NoError(s.T(), err)
+	assert.Equal(s.T(), 1, monitor.TripCount)
+}
+
 func TestRoundTripper(t *testing.T) {
 	suite.Run(t, new(RoundTripperTestSuite))
 }
