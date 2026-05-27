@@ -1,51 +1,26 @@
 all: help
 
-.PHONY : help
-help : Makefile
+.PHONY: help
+help: Makefile
 	@sed -n 's/^##//p' $< | awk 'BEGIN {FS = ":"}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'
 
-TOOLS_MOD_DIR := ./tools
-TOOLS_DIR := $(abspath ./.tools)
-$(TOOLS_DIR)/golangci-lint: $(TOOLS_MOD_DIR)/go.mod $(TOOLS_MOD_DIR)/go.sum $(TOOLS_MOD_DIR)/tools.go
-	@echo BUILD golangci-lint
-	@cd $(TOOLS_MOD_DIR) && \
-	go build -o $(TOOLS_DIR)/golangci-lint github.com/golangci/golangci-lint/cmd/golangci-lint
-
-$(TOOLS_DIR)/godoc: $(TOOLS_MOD_DIR)/go.mod $(TOOLS_MOD_DIR)/go.sum $(TOOLS_MOD_DIR)/tools.go
-	@echo BUILD godoc
-	@cd $(TOOLS_MOD_DIR) && \
-	go build -o $(TOOLS_DIR)/godoc golang.org/x/tools/cmd/godoc
-
-## tools: Build all tools
-tools: $(TOOLS_DIR)/golangci-lint
+## test: Run tests for all modules
+.PHONY: test
+test:
+	@go test $(TESTARGS) ./...
+	@cd test && go test $(TESTARGS) ./...
+	@cd example && go test $(TESTARGS) ./...
 
 ## lint: Run golangci-lint
 .PHONY: lint
-lint: $(TOOLS_DIR)/golangci-lint
-	@echo LINT
-	@$(TOOLS_DIR)/golangci-lint run -c .github/linters/.golangci.yaml --out-format colored-line-number
-	@printf "LINT... \033[0;32m [OK] \033[0m\n"
+lint:
+	@./scripts/lint -c .golangci.yml
 
-## test: Run test
-.PHONY: test
-test:
-	@echo TEST
-	@cd test && go test -v ./...
-	@printf "TEST... \033[0;32m [OK] \033[0m\n"
+## fmt: Format Go files
+.PHONY: fmt
+fmt:
+	@gofmt -w $$(find . -name '*.go' -not -path './.tools/*')
 
-.PHONY: $(BIN_DIR)
-$(BIN_DIR):
-	@mkdir -p $@
-
-## godoc: View godoc
-PKG_NAME:=$(shell cat go.mod | grep module | cut -d' ' -f2)
-.PHONY: godoc
-godoc: $(TOOLS_DIR)/godoc
-	@echo "Open http://localhost:6060/pkg/$(PKG_NAME) on browser."
-	$(TOOLS_DIR)/godoc -http localhost:6060
-
-.PHONY: lint-ci
-lint-ci: $(TOOLS_DIR)/golangci-lint
-	@echo LINT
-	@$(TOOLS_DIR)/golangci-lint run -c .github/linters/.golangci.yaml
-	@printf "LINT... \033[0;32m [OK] \033[0m\n"
+## ci: Run lint and tests
+.PHONY: ci
+ci: lint test

@@ -1,89 +1,55 @@
-name: Unit Test
-
-env:
-  GOVERSION: '1.17'
-  GOMOD_CACHE_NAME: 'go-cache'
+name: CI
 
 on:
   push:
-    branches: [ master ]
+    branches:
+      - master
   pull_request:
-    branches-ignore: []
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  GO_VERSION: stable
 
 jobs:
-  gomod:
-    name: Resolve go module dependencies
-    runs-on: ubuntu-latest
-    steps:
-    - name: Checkout Code
-      uses: actions/checkout@v2
-
-    - name: Install Go
-      uses: actions/setup-go@v2
-      with:
-        go-version: ${{ env.GOVERSION }}
-
-    - uses: actions/cache@v2
-      with:
-        path: ~/go/pkg/mod
-        key: ${{ runner.os }}-${{ env.GOMOD_CACHE_NAME }}-${{ hashFiles('**/go.sum') }}
-        restore-keys: |
-          ${{ runner.os }}-${{ env.GOMOD_CACHE_NAME }}-
-
-    - name: Download go module
-      run: go mod download
-
-    - name: Download go module for test
-      run: cd test && go mod download
-
-    - name: Build tools for go module caching
-      run: make tools
-
-
   test:
-    name: Unit Testing
+    name: Test
     runs-on: ubuntu-latest
-    needs:
-      - gomod
     steps:
-    - name: Checkout Code
-      uses: actions/checkout@v2
+      - name: Checkout
+        uses: actions/checkout@v4
 
-    - name: Install Go
-      uses: actions/setup-go@v2
-      with:
-        go-version: ${{ env.GOVERSION }}
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: ${{ env.GO_VERSION }}
+          cache: true
+          cache-dependency-path: |
+            go.sum
+            test/go.sum
+            example/go.sum
 
-    - uses: actions/cache@v2
-      with:
-        path: ~/go/pkg/mod
-        key: ${{ runner.os }}-${{ env.GOMOD_CACHE_NAME }}-${{ hashFiles('**/go.sum') }}
-        restore-keys: |
-          ${{ runner.os }}-${{ env.GOMOD_CACHE_NAME }}-
-
-    - name: Test
-      run: make test
+      - name: Run tests
+        run: make test
 
   lint:
     name: Lint
     runs-on: ubuntu-latest
-    needs:
-      - gomod
     steps:
-    - name: Checkout Code
-      uses: actions/checkout@v2
+      - name: Checkout
+        uses: actions/checkout@v4
 
-    - name: Install Go
-      uses: actions/setup-go@v2
-      with:
-        go-version: ${{ env.GOVERSION }}
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: ${{ env.GO_VERSION }}
+          cache: true
+          cache-dependency-path: |
+            go.sum
+            test/go.sum
+            example/go.sum
 
-    - uses: actions/cache@v2
-      with:
-        path: ~/go/pkg/mod
-        key: ${{ runner.os }}-${{ env.GOMOD_CACHE_NAME }}-${{ hashFiles('**/go.sum') }}
-        restore-keys: |
-          ${{ runner.os }}-${{ env.GOMOD_CACHE_NAME }}-
-
-    - name: Lint
-      run: make lint-ci
+      - name: Run lint
+        run: make lint

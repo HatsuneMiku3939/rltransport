@@ -1,8 +1,8 @@
 [![CodeQL](https://github.com/HatsuneMiku3939/rltransport/actions/workflows/codeql-analysis.yml/badge.svg)](https://github.com/HatsuneMiku3939/rltransport/actions/workflows/codeql-analysis.yml)
-[![Unit Test](https://github.com/HatsuneMiku3939/rltransport/actions/workflows/test.yaml/badge.svg)](https://github.com/HatsuneMiku3939/rltransport/actions/workflows/test.yaml)
+[![CI](https://github.com/HatsuneMiku3939/rltransport/actions/workflows/test.yaml/badge.svg)](https://github.com/HatsuneMiku3939/rltransport/actions/workflows/test.yaml)
 
 # rltransport
-The RoundTripper which limits the number of concurrent requests.
+The RoundTripper which rate-limits outbound HTTP requests.
 
 ## examples
 
@@ -46,4 +46,19 @@ func main() {
 		fmt.Printf("[%s] %s\n", time.Now().Format("2006-01-02 15:04:05"), res.Status)
 	}
 }
+```
+
+## Development
+
+Run the local quality checks before opening a pull request:
+
+```bash
+make lint
+make test
+```
+
+To run both checks in the same order as CI:
+
+```bash
+make ci
 ```
