@@ -62,3 +62,9 @@ To run both checks in the same order as CI:
 ```bash
 make ci
 ```
+
+Concurrency coverage is validated with the Go race detector (`go test -race`):
+
+```bash
+make test-race
+```
