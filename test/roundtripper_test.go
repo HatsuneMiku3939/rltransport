@@ -11,13 +11,13 @@ import (
 )
 
 // RoundTripperTestSuite is a testify suite for RoundTripper
-type RounterTripperTestSuite struct {
+type RoundTripperTestSuite struct {
 	suite.Suite
 }
 
-func (s *RounterTripperTestSuite) TestUnlimited() {
+func (s *RoundTripperTestSuite) TestUnlimited() {
 	// dummy RoundTripper for test
-	monitor := NewMoniteringTripper()
+	monitor := NewMonitoringTripper()
 
 	// Create a new http client with unlimited limit
 	client := &http.Client{
@@ -59,9 +59,9 @@ func (s *RounterTripperTestSuite) TestUnlimited() {
 }
 
 // TestSimpleLimiter is a test for simple limiter
-func (s *RounterTripperTestSuite) TestSimpleLimiter() {
+func (s *RoundTripperTestSuite) TestSimpleLimiter() {
 	// dummy RoundTripper for test
-	monitor := NewMoniteringTripper()
+	monitor := NewMonitoringTripper()
 
 	// simple limiter for test
 	limiter := &simpleLimiter{
@@ -115,6 +115,6 @@ func (s *RounterTripperTestSuite) TestSimpleLimiter() {
 	}
 }
 
-func TestRounterTripper(t *testing.T) {
-	suite.Run(t, new(RounterTripperTestSuite))
+func TestRoundTripper(t *testing.T) {
+	suite.Run(t, new(RoundTripperTestSuite))
 }

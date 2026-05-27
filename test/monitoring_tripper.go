@@ -5,17 +5,17 @@ import (
 	"net/http/httptest"
 )
 
-type MoniteringTripper struct {
+type MonitoringTripper struct {
 	TripCount int
 }
 
-func NewMoniteringTripper() *MoniteringTripper {
-	return &MoniteringTripper{
+func NewMonitoringTripper() *MonitoringTripper {
+	return &MonitoringTripper{
 		TripCount: 0,
 	}
 }
 
-func (t *MoniteringTripper) RoundTrip(req *http.Request) (*http.Response, error) {
+func (t *MonitoringTripper) RoundTrip(req *http.Request) (*http.Response, error) {
 	w := httptest.NewRecorder()
 	w.WriteHeader(200)
 	w.Write([]byte("OK"))
@@ -24,6 +24,6 @@ func (t *MoniteringTripper) RoundTrip(req *http.Request) (*http.Response, error)
 	return w.Result(), nil
 }
 
-func (t *MoniteringTripper) Reset() {
+func (t *MonitoringTripper) Reset() {
 	t.TripCount = 0
 }
