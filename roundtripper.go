@@ -22,8 +22,15 @@ type RoundTripper struct {
 
 // New returns a RoundTripper that rate-limits requests with limiter.
 func New(limiter Limiter) *RoundTripper {
+	return NewWithTransport(limiter, nil)
+}
+
+// NewWithTransport returns a RoundTripper that rate-limits requests with
+// limiter and sends allowed requests to transport.
+func NewWithTransport(limiter Limiter, transport http.RoundTripper) *RoundTripper {
 	rt := &RoundTripper{
-		Limiter: limiter,
+		Limiter:   limiter,
+		Transport: transport,
 	}
 	rt.init()
 

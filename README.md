@@ -6,7 +6,9 @@ The RoundTripper which rate-limits outbound HTTP requests.
 
 ## examples
 
-Use `rltransport.New(limiter)` to create a transport. Pass `nil` to disable rate limiting.
+Use `rltransport.New(limiter)` to create a transport backed by `http.DefaultTransport`.
+Use `rltransport.NewWithTransport(limiter, transport)` to wrap a custom `http.RoundTripper`.
+Pass `nil` as the limiter to disable rate limiting, or `nil` as the transport to use `http.DefaultTransport`.
 
 ```golang
 package main
