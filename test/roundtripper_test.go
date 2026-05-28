@@ -2,6 +2,7 @@ package test
 
 import (
 	"net/http"
+	"sync"
 	"testing"
 
 	"github.com/HatsuneMiku3939/rltransport"
@@ -54,7 +55,7 @@ func (s *RoundTripperTestSuite) TestUnlimited() {
 		}
 
 		// Check the result
-		assert.Equalf(s.T(), c.want, monitor.TripCount, "sendCount: %d want %d", c.sendCount, c.want)
+		assert.Equalf(s.T(), c.want, monitor.Count(), "sendCount: %d want %d", c.sendCount, c.want)
 	}
 }
 
@@ -111,7 +112,7 @@ func (s *RoundTripperTestSuite) TestSimpleLimiter() {
 		}
 
 		// Check the result
-		assert.Equalf(s.T(), c.want, monitor.TripCount, "sendCount: %d want %d", c.sendCount, c.want)
+		assert.Equalf(s.T(), c.want, monitor.Count(), "sendCount: %d want %d", c.sendCount, c.want)
 	}
 }
 
@@ -134,7 +135,7 @@ func (s *RoundTripperTestSuite) TestNew() {
 
 	_, err := client.Get("http://example.com")
 	assert.NoError(s.T(), err)
-	assert.Equal(s.T(), 1, monitor.TripCount)
+	assert.Equal(s.T(), 1, monitor.Count())
 }
 
 func (s *RoundTripperTestSuite) TestNewWithNilLimiter() {
@@ -151,7 +152,57 @@ func (s *RoundTripperTestSuite) TestNewWithNilLimiter() {
 
 	_, err := client.Get("http://example.com")
 	assert.NoError(s.T(), err)
-	assert.Equal(s.T(), 1, monitor.TripCount)
+	assert.Equal(s.T(), 1, monitor.Count())
+}
+
+func (s *RoundTripperTestSuite) TestConcurrentRoundTrip() {
+	const (
+		workerCount       = 16
+		requestsPerWorker = 64
+	)
+	requestCount := workerCount * requestsPerWorker
+
+	monitor := NewMonitoringTripper()
+	limiter := newConcurrentLimiter(requestCount)
+	client := &http.Client{
+		Transport: &rltransport.RoundTripper{
+			Transport: monitor,
+			Limiter:   limiter,
+		},
+	}
+
+	var wg sync.WaitGroup
+	start := make(chan struct{})
+	errs := make(chan error, requestCount)
+
+	for worker := 0; worker < workerCount; worker++ {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			<-start
+
+			for request := 0; request < requestsPerWorker; request++ {
+				resp, err := client.Get("http://example.com")
+				if err != nil {
+					errs <- err
+					continue
+				}
+				if resp != nil {
+					_ = resp.Body.Close()
+				}
+			}
+		}()
+	}
+
+	close(start)
+	wg.Wait()
+	close(errs)
+
+	for err := range errs {
+		assert.NoError(s.T(), err)
+	}
+	assert.Equal(s.T(), requestCount, monitor.Count())
+	assert.Equal(s.T(), requestCount, limiter.Count())
 }
 
 func TestRoundTripper(t *testing.T) {
