@@ -1,8 +1,8 @@
 package test
 
 import (
-	"context"
 	"fmt"
+	"net/http"
 )
 
 type simpleLimiter struct {
@@ -10,7 +10,7 @@ type simpleLimiter struct {
 	Limit int
 }
 
-func (l *simpleLimiter) Wait(ctx context.Context) error {
+func (l *simpleLimiter) Wait(_ *http.Request) error {
 	if l.Count >= l.Limit {
 		return fmt.Errorf("limit exceeded")
 	}
