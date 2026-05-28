@@ -155,6 +155,78 @@ func (s *RoundTripperTestSuite) TestNewWithNilLimiter() {
 	assert.Equal(s.T(), 1, monitor.Count())
 }
 
+func (s *RoundTripperTestSuite) TestNewWithTransport() {
+	limiter := &simpleLimiter{
+		Count: 0,
+		Limit: 1,
+	}
+	monitor := NewMonitoringTripper()
+
+	cases := []struct {
+		name                 string
+		limiter              rltransport.Limiter
+		transport            http.RoundTripper
+		wantLimiter          rltransport.Limiter
+		wantTransport        http.RoundTripper
+		wantDefaultLimiter   bool
+		wantDefaultTransport bool
+		wantRequest          bool
+	}{
+		{
+			name:          "custom limiter and transport",
+			limiter:       limiter,
+			transport:     monitor,
+			wantLimiter:   limiter,
+			wantTransport: monitor,
+			wantRequest:   true,
+		},
+		{
+			name:               "nil limiter and custom transport",
+			transport:          monitor,
+			wantTransport:      monitor,
+			wantDefaultLimiter: true,
+			wantRequest:        true,
+		},
+		{
+			name:                 "custom limiter and nil transport",
+			limiter:              limiter,
+			wantLimiter:          limiter,
+			wantDefaultTransport: true,
+		},
+	}
+
+	for _, c := range cases {
+		s.Run(c.name, func() {
+			monitor.Reset()
+			limiter.Reset()
+
+			rt := rltransport.NewWithTransport(c.limiter, c.transport)
+
+			if c.wantDefaultLimiter {
+				assert.NotNil(s.T(), rt.Limiter)
+			} else {
+				assert.Same(s.T(), c.wantLimiter, rt.Limiter)
+			}
+
+			if c.wantDefaultTransport {
+				assert.Same(s.T(), http.DefaultTransport, rt.Transport)
+			} else {
+				assert.Same(s.T(), c.wantTransport, rt.Transport)
+			}
+
+			if c.wantRequest {
+				client := &http.Client{
+					Transport: rt,
+				}
+
+				_, err := client.Get("http://example.com")
+				assert.NoError(s.T(), err)
+				assert.Equal(s.T(), 1, monitor.Count())
+			}
+		})
+	}
+}
+
 func (s *RoundTripperTestSuite) TestConcurrentRoundTrip() {
 	const (
 		workerCount       = 16
