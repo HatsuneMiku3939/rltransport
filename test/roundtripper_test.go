@@ -1,6 +1,7 @@
 package test
 
 import (
+	"context"
 	"net/http"
 	"sync"
 	"testing"
@@ -14,6 +15,17 @@ import (
 // RoundTripperTestSuite is a testify suite for RoundTripper
 type RoundTripperTestSuite struct {
 	suite.Suite
+}
+
+type contextCaptureLimiter struct {
+	count int
+	ctx   context.Context
+}
+
+func (l *contextCaptureLimiter) Wait(ctx context.Context) error {
+	l.count++
+	l.ctx = ctx
+	return nil
 }
 
 func (s *RoundTripperTestSuite) TestUnlimited() {
@@ -225,6 +237,45 @@ func (s *RoundTripperTestSuite) TestNewWithTransport() {
 			}
 		})
 	}
+}
+
+func (s *RoundTripperTestSuite) TestLimiterFuncReceivesRequest() {
+	monitor := NewMonitoringTripper()
+	var gotHost string
+
+	client := &http.Client{
+		Transport: rltransport.NewWithTransport(
+			rltransport.LimiterFunc(func(req *http.Request) error {
+				gotHost = req.URL.Host
+				return nil
+			}),
+			monitor,
+		),
+	}
+
+	_, err := client.Get("http://example.com")
+	assert.NoError(s.T(), err)
+	assert.Equal(s.T(), "example.com", gotHost)
+	assert.Equal(s.T(), 1, monitor.Count())
+}
+
+func (s *RoundTripperTestSuite) TestNewContextLimiter() {
+	monitor := NewMonitoringTripper()
+	contextLimiter := &contextCaptureLimiter{}
+	limiter := rltransport.NewContextLimiter(contextLimiter)
+	requestContext := context.WithValue(context.Background(), "test-key", "test-value")
+	req, err := http.NewRequestWithContext(requestContext, http.MethodGet, "http://example.com", nil)
+	assert.NoError(s.T(), err)
+
+	client := &http.Client{
+		Transport: rltransport.NewWithTransport(limiter, monitor),
+	}
+
+	_, err = client.Do(req)
+	assert.NoError(s.T(), err)
+	assert.Equal(s.T(), 1, contextLimiter.count)
+	assert.Equal(s.T(), "test-value", contextLimiter.ctx.Value("test-key"))
+	assert.Equal(s.T(), 1, monitor.Count())
 }
 
 func (s *RoundTripperTestSuite) TestConcurrentRoundTrip() {

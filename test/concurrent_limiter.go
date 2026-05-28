@@ -1,8 +1,8 @@
 package test
 
 import (
-	"context"
 	"fmt"
+	"net/http"
 	"sync"
 )
 
@@ -18,8 +18,8 @@ func newConcurrentLimiter(limit int) *concurrentLimiter {
 	}
 }
 
-func (l *concurrentLimiter) Wait(ctx context.Context) error {
-	if err := ctx.Err(); err != nil {
+func (l *concurrentLimiter) Wait(req *http.Request) error {
+	if err := req.Context().Err(); err != nil {
 		return err
 	}
 

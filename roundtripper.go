@@ -42,8 +42,8 @@ func (rt *RoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
 	// Ensure that the Transport is initialized.
 	rt.once.Do(rt.init)
 
-	// Wait for the rate limiter  within context of the request (if limiter is given).
-	if err := rt.Limiter.Wait(req.Context()); err != nil {
+	// Wait for the rate limiter with the full request.
+	if err := rt.Limiter.Wait(req); err != nil {
 		return nil, err
 	}
 
